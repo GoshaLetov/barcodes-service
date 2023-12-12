@@ -37,12 +37,10 @@ download:
   script:
     - pip install dvc==3.33.3 dvc_ssh==2.22.2
     - make download
-  artifacts:
-    paths:
-      - models/*.onnx
-      - models/*/*.onnx
-      - models/*/*/*.onnx
-    expire_in: 1 day
+#  artifacts:
+#    paths:
+#      - models/*/*.onnx
+#    expire_in: 1 day
 
 build:
   stage: build
