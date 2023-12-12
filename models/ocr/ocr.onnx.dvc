@@ -1,0 +1,5 @@
+outs:
+- md5: a5c40b294e4bef7a8925c8a33472c533
+  size: 7166522
+  hash: md5
+  path: ocr.onnx

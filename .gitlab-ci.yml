@@ -1,0 +1,89 @@
+image: python:3.10
+
+variables:
+  DOCKER_IMAGE: $CI_REGISTRY_IMAGE
+  DOCKER_TAG: $CI_COMMIT_SHORT_SHA
+
+stages:
+  - prepare
+  - build
+  - lint
+  - tests
+  - deploy
+
+.ssh_key_template: &ssh_key_template
+  before_script:
+    - chmod 400 $SSH_PRIVATE_KEY
+    - mkdir -p ~/.ssh
+    - cp $SSH_PRIVATE_KEY ~/.ssh/id_rsa
+    - chmod 400 ~/.ssh/id_rsa
+  after_script:
+    - rm -f ~/.ssh/id_rsa
+
+.docker_login: &docker_login
+  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+.docker_common: &docker_common
+  image: docker
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+  services:
+    - docker:20.10.5-dind
+
+download:
+  <<: *ssh_key_template
+  stage: prepare
+  script:
+    - pip install dvc==3.21.1 dvc_ssh==2.22.2
+    - make download
+  artifacts:
+    paths:
+      - models/*.onnx
+      - models/*/*.onnx
+      - models/*/*/*.onnx
+    expire_in: 1 day
+
+build:
+  stage: build
+  <<: *docker_common
+  script:
+    - *docker_login
+    - docker pull $DOCKER_IMAGE:latest || true
+    - docker build --cache-from $DOCKER_IMAGE:latest --tag $DOCKER_IMAGE:$DOCKER_TAG --tag $DOCKER_IMAGE:latest .
+    - docker push $DOCKER_IMAGE:$DOCKER_TAG
+    - docker push $DOCKER_IMAGE:latest
+  needs:
+    - download
+
+lint:
+  stage: lint
+  <<: *docker_common
+  script:
+    - *docker_login
+    - docker pull $DOCKER_IMAGE:$DOCKER_TAG
+    - docker run $DOCKER_IMAGE:$DOCKER_TAG bash -c 'make lint'
+  needs:
+    - build
+
+deploy:
+  stage: deploy
+  variables:
+    ANSIBLE_HOST_KEY_CHECKING: "false"
+  script:
+    - python3 -m pip install ansible==8.4.0
+    - make deploy DOCKER_IMAGE=$DOCKER_IMAGE DOCKER_TAG=$DOCKER_TAG
+  when: manual
+  <<: *ssh_key_template
+
+destroy:
+  stage: deploy
+  variables:
+    ANSIBLE_HOST_KEY_CHECKING: "false"
+  script:
+    - python3 -m pip install ansible==8.4.0
+    - make destroy
+  needs:
+    - deploy
+  when: manual
+  <<: *ssh_key_template

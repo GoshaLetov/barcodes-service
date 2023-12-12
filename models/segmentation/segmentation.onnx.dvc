@@ -1,0 +1,5 @@
+outs:
+- md5: e236df9705dc80ba935ee22d243a9fd1
+  size: 130020821
+  hash: md5
+  path: segmentation.onnx

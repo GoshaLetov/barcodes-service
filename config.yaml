@@ -1,0 +1,14 @@
+ocr:
+  onnx: 'ocr.onnx'
+  provider: 'CPUExecutionProvider'
+  width: 416
+  height: 96
+  vocab: '0123456789'
+  text_size: 13
+
+seg:
+  onnx: 'segmentation.onnx'
+  provider: 'CPUExecutionProvider'
+  width: 512
+  height: 512
+  threshold: 0.5

@@ -1,0 +1,10 @@
+[core]
+    remote = origin
+[cache]
+    type = "hardlink,symlink"
+['remote "drivehw01models"']
+    url = gdrive://1hgLharUfGvW-DD6GZLeSauEBV82xTE5J
+['remote "origin"']
+    url = ssh://91.206.15.25/home/k.khvoshchev/dvc_files
+    user = k.khvoshchev
+    ask_password = true
