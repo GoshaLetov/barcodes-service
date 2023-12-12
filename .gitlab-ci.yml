@@ -35,7 +35,7 @@ download:
   <<: *ssh_key_template
   stage: prepare
   script:
-    - pip install dvc==3.21.1 dvc_ssh==2.22.2
+    - pip install dvc==3.33.3 dvc_ssh==2.22.2
     - make download
   artifacts:
     paths:
