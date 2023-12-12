@@ -1,7 +1,5 @@
 import albumentations
 
-from albumentations.pytorch import ToTensorV2
-
 import numpy as np
 
 from abc import ABC, abstractmethod
@@ -40,7 +38,6 @@ class ONNXBarCodeSegmentationModel(BaseBarCodeSegmentationModel):
         self._transform = albumentations.Compose([
             albumentations.Resize(width=config.width, height=config.width),
             albumentations.Normalize(),
-            ToTensorV2(),
         ])
 
     def extract_mask(self, image: np.ndarray) -> np.ndarray:
@@ -55,7 +52,7 @@ class ONNXBarCodeSegmentationModel(BaseBarCodeSegmentationModel):
         } for prop in regionprops(label(self.inference(image=image)))]
 
     def inference(self, image: np.ndarray) -> np.ndarray:
-        tensor = self._transform(image=image).get('image')
+        tensor = self._transform(image=image).get('image').transpose(2, 0, 1)
 
         mask = self._model.run(output_names=None, input_feed={'input': [tensor]})
         mask = expit(resize(src=mask[0][0, 0], dsize=[image.shape[1], image.shape[0]])) > 0.5

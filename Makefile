@@ -50,3 +50,20 @@ deploy:
 .PHONY: destroy
 destroy:
 	ansible-playbook -i deploy/inventory.ini deploy/destroy.yml
+
+.PHONY: lint
+lint:
+	flake8 src/
+
+.PHONY: tests_unit
+tests_unit:
+	PYTHONPATH=. pytest tests/unit
+
+.PHONY: tests_integration
+tests_integration:
+	PYTHONPATH=. pytest tests/integration
+
+.PHONY: tests
+tests:
+	make tests_integration
+	make tests_unit

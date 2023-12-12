@@ -1,11 +1,9 @@
 import albumentations
-import torch
 import cv2
 import itertools
 import operator
 
 from typing import List, Union, Dict
-from albumentations.pytorch import ToTensorV2
 
 import numpy as np
 
@@ -22,7 +20,7 @@ class BaseBarCodeOCRModel(ABC):
     def extract_text(self, image: np.ndarray) -> np.ndarray:
         ...
 
-    def inference(self, image: np.ndarray) -> torch.Tensor:
+    def inference(self, image: np.ndarray) -> np.ndarray:
         ...
 
 
@@ -39,7 +37,6 @@ class ONNXBarCodeOCRModel(BaseBarCodeOCRModel):
             ),
             albumentations.Normalize(),
             TextEncode(vocab=config.vocab, target_text_size=config.text_size),
-            ToTensorV2(),
         ])
         self._vocab = config.vocab
 
@@ -48,7 +45,7 @@ class ONNXBarCodeOCRModel(BaseBarCodeOCRModel):
         return self._labels_to_strings(labels=labels, vocab=self._vocab)
 
     def inference(self, image: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-        tensor = self._transform(image=image, text='').get('image')
+        tensor = self._transform(image=image, text='').get('image').transpose(2, 0, 1)
         logits = self._model.run(output_names=None, input_feed={'input': [tensor]})
         probas = softmax(x=logits[0].transpose(1, 0, 2))
         return probas.argmax(axis=2), probas.max(axis=2)
@@ -138,8 +135,7 @@ class TextEncode(albumentations.BasicTransform):
             (0, self.target_text_size - len(processed_text)),
             mode='constant',
         )
-        processed_text = torch.IntTensor(processed_text)
 
-        kwargs['text'] = processed_text
+        kwargs['text'] = processed_text.astype(int)
 
         return kwargs
