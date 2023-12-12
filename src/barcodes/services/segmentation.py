@@ -1,5 +1,4 @@
 import albumentations
-import torch
 
 from albumentations.pytorch import ToTensorV2
 
@@ -62,6 +61,3 @@ class ONNXBarCodeSegmentationModel(BaseBarCodeSegmentationModel):
         mask = expit(resize(src=mask[0][0, 0], dsize=[image.shape[1], image.shape[0]])) > 0.5
 
         return mask.astype(int)
-
-    def draw_bounding_box(self, image: np.ndarray) -> np.ndarray:
-        pass

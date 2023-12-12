@@ -65,7 +65,7 @@ destroy:
   variables:
     ANSIBLE_HOST_KEY_CHECKING: "false"
   script:
-    - python3 -m pip install ansible==8.4.0
+    - python3 -m pip install ansible==9.1.0
     - make destroy
   needs:
     - deploy

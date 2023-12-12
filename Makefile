@@ -26,7 +26,7 @@ run:
 	docker run \
 		--detach \
 		--publish 4000:$(APP_PORT) \
-		--name k.khvoshchev.hw1.service.4000 \
+		--name k.khvoshchev.hw2.service.5000 \
 		--restart always \
 		$(DOCKER_IMAGE):$(DOCKER_TAG)
 

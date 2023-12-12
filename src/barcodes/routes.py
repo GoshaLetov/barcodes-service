@@ -1,8 +1,11 @@
 import cv2
 import numpy as np
 
+from io import BytesIO
+from PIL import Image
 from http import HTTPStatus
 from fastapi import APIRouter, Depends, File, UploadFile, HTTPException
+from fastapi.responses import StreamingResponse
 from dependency_injector.wiring import Provide, inject
 
 from src.barcodes.services import BaseBarCodesAnalyzer
@@ -40,7 +43,27 @@ def predict(
     return BarCodeCredentialsList(barcodes=[
         BarCodeCredentials(
             bbox=BoundingBox(**barcode.get('bbox', {})),
-            value=' '.join(barcode.get('value', '')),
+            value=barcode.get('value', ''),
         )
         for barcode in analyzer.inference(image=_bytes2image(image=image))
     ])
+
+
+@router.post(
+    path='/draw',
+    description='Run OCR Pipeline on given image and return image with bboxes and texts',
+)
+@inject
+def crop(
+        image: UploadFile = File(
+            title='BarCodeImageInput',
+            alias='image',
+            description='Image for inference.',
+        ),
+        analyzer: BaseBarCodesAnalyzer = Depends(Provide[Container.analyzer]),
+) -> StreamingResponse:
+    io = BytesIO()
+    image = Image.fromarray(analyzer.draw(image=_bytes2image(image=image)))
+    image.save(io, format='JPEG')
+    io.seek(0)
+    return StreamingResponse(content=io, media_type='image/jpeg')
