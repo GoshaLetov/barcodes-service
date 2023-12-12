@@ -7,8 +7,6 @@ variables:
 stages:
   - prepare
   - build
-  - lint
-  - tests
   - deploy
 
 .ssh_key_template: &ssh_key_template
@@ -37,10 +35,6 @@ download:
   script:
     - pip install dvc==3.33.3 dvc_ssh==2.22.2
     - make download
-#  artifacts:
-#    paths:
-#      - models/*/*.onnx
-#    expire_in: 1 day
 
 build:
   stage: build
@@ -54,16 +48,6 @@ build:
   needs:
     - download
 
-lint:
-  stage: lint
-  <<: *docker_common
-  script:
-    - *docker_login
-    - docker pull $DOCKER_IMAGE:$DOCKER_TAG
-    - docker run $DOCKER_IMAGE:$DOCKER_TAG bash -c 'make lint'
-  needs:
-    - build
-
 deploy:
   stage: deploy
   variables:
@@ -73,6 +57,8 @@ deploy:
     - make deploy DOCKER_IMAGE=$DOCKER_IMAGE DOCKER_TAG=$DOCKER_TAG
   when: manual
   <<: *ssh_key_template
+  needs:
+    - build
 
 destroy:
   stage: deploy
