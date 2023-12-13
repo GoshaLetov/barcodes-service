@@ -15,7 +15,7 @@ from src.constants import OCR_MODEL_PATH
 class BaseBarCodeOCRModel(ABC):
 
     @abstractmethod
-    def extract_text(self, image: np.ndarray) -> list[str]:
+    def extract_text(self, image: np.ndarray) -> str:
         ...
 
     @abstractmethod
@@ -39,20 +39,23 @@ class ONNXBarCodeOCRModel(BaseBarCodeOCRModel):
         ])
         self._vocab = config.vocab
 
-    def extract_text(self, image: np.ndarray) -> list[str]:
+    def extract_text(self, image: np.ndarray) -> str:
         labels, _ = _decode(*self.inference(image=image))
-        return _labels_to_strings(labels=labels, vocab=self._vocab)
+        text = _labels_to_strings(labels=labels, vocab=self._vocab)
+        if len(text) >= 8:
+            return text
+        return ''
 
     def inference(self, image: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         tensor = self._transform(image=image, text='').get('image').transpose(2, 0, 1)
         logits = self._model.run(output_names=None, input_feed={'input': [tensor]})
         probas = softmax(x=logits[0].transpose(1, 0, 2))
-        return probas.argmax(axis=2), probas.max(axis=2)
+        return probas.argmax(axis=2).ravel(), probas.max(axis=2).ravel()
 
 
 class PadResizeOCR(albumentations.BasicTransform):
     """
-    Приводит к нужному размеру с сохранением отношения сторон, если нужно добавляет падинги.
+    Приводит к нужному размеру с сохранением отношения сторон, добавляет padding если нужно.
     """
 
     def __init__(self, target_width, target_height, value: int = 0, mode: str = 'random'):
@@ -118,27 +121,14 @@ class TextEncode(albumentations.BasicTransform):
         return kwargs
 
 
-def _decode(labels: np.ndarray, confidences: np.ndarray) -> tuple[list[list[int]], list[np.ndarray]]:
+def _decode(labels: np.ndarray, confidences: np.ndarray) -> tuple[list[int], list[float]]:
     result_labels, result_confidences = [], []
-    for label, confidence in zip(labels, confidences):
-        result_one_labels, result_one_confidences = [], []
-        for one_label, group in itertools.groupby(zip(label, confidence), operator.itemgetter(0)):
-            if one_label > 0:
-                result_one_labels.append(one_label)
-                result_one_confidences.append(max(list(zip(*group))[1]))
-        result_labels.append(result_one_labels)
-        result_confidences.append(np.array(result_one_confidences))
+    for label, confidence in itertools.groupby(zip(labels, confidences), operator.itemgetter(0)):
+        if label > 0:
+            result_labels.append(label)
+            result_confidences.append(max(list(zip(*confidence))[1]))
     return result_labels, result_confidences
 
 
-def _labels_to_strings(labels: list[list[int]], vocab: str) -> list[str]:
-    strings = []
-    for single_str_labels in labels:
-        try:
-            output_str = ''.join(
-                vocab[char_index - 1] if char_index > 0 else '_' for char_index in single_str_labels
-            )
-            strings.append(output_str)
-        except IndexError:
-            strings.append('Error')
-    return strings
+def _labels_to_strings(labels: list[int], vocab: str) -> str:
+    return ''.join(vocab[label - 1] if label > 0 else '_' for label in labels)

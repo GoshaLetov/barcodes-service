@@ -23,14 +23,6 @@ def test_inference(barcodes_container: Container, barcode_only_image_numpy: np.n
 def test_text(barcodes_container: Container, barcode_only_image_numpy: np.ndarray, config: Config):
     """ extracted text vocab """
     ocr_model = barcodes_container.barcodes_ocr()
-    text = ''.join(ocr_model.extract_text(image=barcode_only_image_numpy))
+    text = ocr_model.extract_text(image=barcode_only_image_numpy)
 
     assert all([letter in config.ocr.vocab for letter in text])
-
-
-def test_fake_image(barcodes_container: Container, fake_image_numpy: np.ndarray):
-    """ simple fake image false positive check """
-    segmentation_model = barcodes_container.barcodes_segmentation()
-
-    text = ''.join(segmentation_model.extract_bounding_box(image=fake_image_numpy))
-    assert text == ''

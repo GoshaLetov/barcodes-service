@@ -6,7 +6,7 @@ from scipy.special import expit
 from skimage.measure import label, regionprops
 from onnxruntime import InferenceSession
 from src.config import SEGConfig
-from src.constants import SEG_MODEL_PATH
+from src.constants import SEG_MODEL_PATH, SEG_MIN_AREA
 
 
 class BaseBarCodeSegmentationModel(ABC):
@@ -36,14 +36,21 @@ class ONNXBarCodeSegmentationModel(BaseBarCodeSegmentationModel):
         ])
 
     def extract_bounding_box(self, image: np.ndarray) -> list[dict[str, int]]:
-        return [
-            {
-                'x_min': prop.bbox[0],
-                'x_max': prop.bbox[2],
-                'y_min': prop.bbox[1],
-                'y_max': prop.bbox[3],
-            } for prop in regionprops(label(self.inference(image=image)))
-        ]
+        bounding_boxes = []
+        for prop in regionprops(label(self.inference(image=image))):
+            x_min = prop.bbox[0]
+            x_max = prop.bbox[2]
+            y_min = prop.bbox[1]
+            y_max = prop.bbox[3]
+
+            if (y_max - y_min) * (x_max - x_min) >= SEG_MIN_AREA:
+                bounding_boxes.append({
+                    'x_min': x_min,
+                    'x_max': x_max,
+                    'y_min': y_min,
+                    'y_max': y_max,
+                })
+        return bounding_boxes
 
     def inference(self, image: np.ndarray) -> np.ndarray:
         tensor = self._transform(image=image).get('image').transpose(2, 0, 1)

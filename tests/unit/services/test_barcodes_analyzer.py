@@ -26,10 +26,10 @@ class FakeBarCodeOCRModel(BaseBarCodeOCRModel):
     def inference(self, image: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         return np.ndarray(shape=[1, 1], dtype=np.uint8), np.ndarray(shape=[1, 1], dtype=np.float16)
 
-    def extract_text(self, image: np.ndarray) -> list[str]:
+    def extract_text(self, image: np.ndarray) -> str:
         if self.empty_output:
-            return ['']
-        return ['111111111111']
+            return ''
+        return '111111111111'
 
 
 def test_not_fail(barcodes_container: Container, barcode_image_numpy: np.ndarray):

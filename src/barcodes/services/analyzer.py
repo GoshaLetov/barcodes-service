@@ -34,10 +34,7 @@ class ONNXBarCodesAnalyzer(BaseBarCodesAnalyzer):
             if crop.shape[0] > crop.shape[1]:
                 crop = cv2.rotate(crop, rotateCode=2)
 
-            value = ''.join(self._ocr.extract_text(image=crop))
-
-            if len(value) >= 8:
-                barcodes.append({'bbox': bounding_box, 'value': value})
+            barcodes.append({'bbox': bounding_box, 'value': self._ocr.extract_text(image=crop)})
 
         return barcodes
 
@@ -48,7 +45,7 @@ class ONNXBarCodesAnalyzer(BaseBarCodesAnalyzer):
             x_max = barcode.get('bbox', {}).get('x_max')
             y_min = barcode.get('bbox', {}).get('y_min')
             y_max = barcode.get('bbox', {}).get('y_max')
-            value = ' '.join(barcode.get('value', ''))
+            value = barcode.get('value', '')
             cv2.rectangle(image, pt1=[y_min, x_min], pt2=[y_max, x_max], color=[0, 255, 0], thickness=2)
             cv2.putText(image, text=value, org=[y_min, x_min - 30], fontFace=0, fontScale=1, color=[0, 255, 0])
         return image

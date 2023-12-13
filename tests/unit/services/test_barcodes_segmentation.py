@@ -35,7 +35,6 @@ def test_bounding_box(barcodes_container: Container, barcode_image_numpy: np.nda
 def test_fake_image(barcodes_container: Container, fake_image_numpy: np.ndarray):
     """ simple fake image false positive check """
     segmentation_model = barcodes_container.barcodes_segmentation()
-
     bounding_boxes = segmentation_model.extract_bounding_box(image=fake_image_numpy)
     assert bounding_boxes == []
 

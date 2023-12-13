@@ -28,12 +28,6 @@ def barcode_image_numpy():
     )
 
 
-def barcode_only_image_bytes():
-    """ Barcode only image: bytes """
-    with open(TESTS_DIR / 'images' / 'barcode_only.png', 'rb') as image:
-        yield image
-
-
 @pytest.fixture
 def barcode_only_image_numpy():
     """ Barcode only image: ndarray """
@@ -43,13 +37,7 @@ def barcode_only_image_numpy():
     )
 
 
-def barcode_two_image_bytes():
-    """ Barcode only image: bytes """
-    with open(TESTS_DIR / 'images' / 'barcode_two.jpg', 'rb') as image:
-        yield image
-
-
-@pytest.fixture
+@pytest.fixture(scope='function')
 def barcode_two_image_numpy():
     """ Barcode only image: ndarray """
     return cv2.cvtColor(
@@ -57,14 +45,8 @@ def barcode_two_image_numpy():
         code=cv2.COLOR_BGR2RGB,
     )
 
+
 @pytest.fixture(scope='function')
-def fake_image_bytes():
-    """ Fake image: bytes """
-    with open(TESTS_DIR / 'images' / 'fake.jpg', 'rb') as image:
-        yield image
-
-
-@pytest.fixture
 def fake_image_numpy():
     """ Fake image: numpy """
     return cv2.cvtColor(
