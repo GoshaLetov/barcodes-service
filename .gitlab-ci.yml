@@ -91,7 +91,8 @@ deploy:
   <<: *ssh_key_template
   needs:
     - lint
-    - tests
+    - unit
+    - integration
 
 destroy:
   stage: deploy
