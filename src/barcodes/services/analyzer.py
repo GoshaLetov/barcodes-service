@@ -11,9 +11,7 @@ class BaseBarCodesAnalyzer(ABC):
     def inference(self, image: np.ndarray) -> list[dict[str, int]]:
         ...
 
-    def crop(self, image: np.ndarray) -> list[np.ndarray]:
-        ...
-
+    @abstractmethod
     def draw(self, image: np.ndarray) -> np.ndarray:
         ...
 

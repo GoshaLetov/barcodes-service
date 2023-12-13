@@ -1,7 +1,5 @@
 import albumentations
-
 import numpy as np
-
 from abc import ABC, abstractmethod
 from cv2 import resize
 from scipy.special import expit
@@ -14,13 +12,10 @@ from src.constants import SEG_MODEL_PATH
 class BaseBarCodeSegmentationModel(ABC):
 
     @abstractmethod
-    def extract_mask(self, image: np.ndarray) -> np.ndarray:
-        ...
-
-    @abstractmethod
     def extract_bounding_box(self, image: np.ndarray) -> list[dict[str, int]]:
         ...
 
+    @abstractmethod
     def inference(self, image: np.ndarray) -> np.ndarray:
         ...
 
@@ -40,16 +35,15 @@ class ONNXBarCodeSegmentationModel(BaseBarCodeSegmentationModel):
             albumentations.Normalize(),
         ])
 
-    def extract_mask(self, image: np.ndarray) -> np.ndarray:
-        return self.inference(image=image)
-
     def extract_bounding_box(self, image: np.ndarray) -> list[dict[str, int]]:
-        return [{
-            'x_min': prop.bbox[0],
-            'x_max': prop.bbox[2],
-            'y_min': prop.bbox[1],
-            'y_max': prop.bbox[3],
-        } for prop in regionprops(label(self.inference(image=image)))]
+        return [
+            {
+                'x_min': prop.bbox[0],
+                'x_max': prop.bbox[2],
+                'y_min': prop.bbox[1],
+                'y_max': prop.bbox[3],
+            } for prop in regionprops(label(self.inference(image=image)))
+        ]
 
     def inference(self, image: np.ndarray) -> np.ndarray:
         tensor = self._transform(image=image).get('image').transpose(2, 0, 1)
