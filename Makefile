@@ -14,7 +14,8 @@ start:
 
 .PHONY: download
 download:
-	dvc pull -R models/
+	dvc pull models/ocr/resnet50.onnx.dvc
+	dvc pull models/segmentation/efficientnet0.onnx.dvc
 
 .PHONY: build
 build:
