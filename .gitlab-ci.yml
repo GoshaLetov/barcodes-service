@@ -39,8 +39,9 @@ download:
     - make download
   artifacts:
     paths:
-      - models/
-    expire_in: 1 hour
+      - models/ocr/ocr.onnx
+      - models/segmentation/segmentation.onnx
+    expire_in: 1 day
 
 build:
   stage: build
