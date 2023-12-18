@@ -17,7 +17,7 @@ def test_extract_barcode(client: TestClient, barcode_image_bytes: bytes):
     response = client.post(url='/barcodes/extract', files=files)
     assert response.status_code == HTTPStatus.OK
 
-    inferred_barcodes = response.json().get('barcodes')
+    inferred_barcodes = response.json()
     assert isinstance(inferred_barcodes, list)
 
     assert len(inferred_barcodes) == 1 and isinstance(inferred_barcodes[0], dict)

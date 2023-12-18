@@ -1,6 +1,9 @@
+from typing import List
+
 import numpy as np
 
 from src.barcodes.container import Container
+from src.barcodes.schemas import BoundingBox
 from src.barcodes.services import BaseBarCodeOCRModel, BaseBarCodeSegmentationModel
 
 
@@ -12,10 +15,10 @@ class FakeBarCodeSegmentationModel(BaseBarCodeSegmentationModel):
     def inference(self, image: np.ndarray) -> np.ndarray:
         return np.ndarray(shape=[1, 1, 1], dtype=np.uint8)
 
-    def extract_bounding_box(self, image: np.ndarray) -> list[dict[str, int]]:
+    def extract_bounding_box(self, image: np.ndarray) -> List[BoundingBox]:
         if self.empty_output:
             return []
-        return [{'x_min': 1, 'x_max': 1, 'y_min': 1, 'y_max': 1}]
+        return [BoundingBox(x_min=1, x_max=1, y_min=1, y_max=1)]
 
 
 class FakeBarCodeOCRModel(BaseBarCodeOCRModel):
@@ -57,8 +60,8 @@ def test_inference_values(barcodes_container: Container, barcode_image_numpy: np
             assert isinstance(barcodes, list)
 
             barcode = barcodes[0]
-            assert barcode.get('bbox') == {'x_min': 1, 'x_max': 1, 'y_min': 1, 'y_max': 1}
-            assert barcode.get('value') == '111111111111'
+            assert barcode.bbox == BoundingBox(x_min=1, x_max=1, y_min=1, y_max=1)
+            assert barcode.value == '111111111111'
 
 
 def test_draw_do_not_mutate_fake(barcodes_container: Container, fake_image_numpy: np.ndarray):

@@ -1,10 +1,3 @@
-#########################################################################################
-#	Variables list:                                                                     #
-#		1) GitLab Registry: CI_REGISTRY, CI_REGISTRY_USER, CI_REGISTRY_PASSWORD         #
-#		2) Docker Image: DOCKER_IMAGE, DOCKER_TAG                                       #
-#		3) Application: APP_HOST, APP_PORT                                              #
-#########################################################################################
-
 APP_PORT := 5050
 APP_HOST := '0.0.0.0'
 

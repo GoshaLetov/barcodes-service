@@ -11,7 +11,3 @@ class BoundingBox(BaseModel):
 class BarCodeCredentials(BaseModel):
     bbox: BoundingBox
     value: str
-
-
-class BarCodeCredentialsList(BaseModel):
-    barcodes: list[BarCodeCredentials]

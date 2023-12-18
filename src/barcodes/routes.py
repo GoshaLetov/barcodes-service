@@ -1,19 +1,20 @@
 from io import BytesIO
 from PIL import Image
+from typing import List
 from fastapi import APIRouter, Depends, File, UploadFile
 from fastapi.responses import StreamingResponse, Response
 from dependency_injector.wiring import Provide, inject
 from src.io import bytes2image
 from src.barcodes.services import BaseBarCodesAnalyzer
 from src.barcodes.container import Container
-from src.barcodes.schemas import BarCodeCredentialsList, BarCodeCredentials, BoundingBox
+from src.barcodes.schemas import BarCodeCredentials, BoundingBox
 
 router = APIRouter(prefix='/barcodes', tags=['barcodes'])
 
 
 @router.post(
     path='/extract',
-    response_model=BarCodeCredentialsList,
+    response_model=List[BarCodeCredentials],
     description='Run OCR Pipeline on given image and return credentials',
 )
 @inject
@@ -24,14 +25,8 @@ def predict(
         description='Image for inference.',
     ),
     analyzer: BaseBarCodesAnalyzer = Depends(Provide[Container.analyzer]),
-) -> BarCodeCredentialsList:
-    return BarCodeCredentialsList(barcodes=[
-        BarCodeCredentials(
-            bbox=BoundingBox(**barcode.get('bbox', {})),
-            value=barcode.get('value', ''),
-        )
-        for barcode in analyzer.inference(image=bytes2image(image=image))
-    ])
+) -> List[BarCodeCredentials]:
+    return analyzer.inference(image=bytes2image(image=image))
 
 
 @router.post(

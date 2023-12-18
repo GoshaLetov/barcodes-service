@@ -1,6 +1,7 @@
 import numpy as np
 
 from src.barcodes.container import Container
+from src.barcodes.schemas import BoundingBox
 
 
 def test_not_fail(barcodes_container: Container, barcode_image_numpy: np.ndarray):
@@ -26,10 +27,7 @@ def test_bounding_box(barcodes_container: Container, barcode_image_numpy: np.nda
     assert isinstance(bounding_boxes, list)
 
     bounding_box = bounding_boxes[0]
-    assert isinstance(bounding_box, dict)
-
-    assert sorted(list(bounding_box.keys())) == sorted(['x_min', 'x_max', 'y_min', 'y_max'])
-    assert all([isinstance(value, int) for value in bounding_box.values()])
+    assert isinstance(bounding_box, BoundingBox)
 
 
 def test_fake_image(barcodes_container: Container, fake_image_numpy: np.ndarray):
