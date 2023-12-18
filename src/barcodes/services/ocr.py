@@ -44,7 +44,10 @@ class ONNXBarCodeOCRModel(BaseBarCodeOCRModel):
         return _labels_to_strings(labels=labels, vocab=self._vocab)
 
     def inference(self, image: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-        tensor = self._transform(image=image, text='').get('image').transpose(2, 0, 1)  # noqa: WPS221
+        tensor = self._transform(
+            image=image,
+            text='',
+        ).get('image').transpose(2, 0, 1)
         logits = self._model.run(output_names=None, input_feed={'input': [tensor]})
         probas = softmax(x=logits[0].transpose(1, 0, 2))
         return probas.argmax(axis=2).ravel(), probas.max(axis=2).ravel()  # noqa: WPS221
@@ -108,16 +111,22 @@ class TextEncode(albumentations.BasicTransform):
     def __call__(self, force_apply=False, **kwargs) -> Dict[str, np.ndarray]:
         source_text = kwargs['text'].strip()
 
-        processed_text = [self.vocab.index(char) + 1 for char in source_text if char in self.vocab]  # noqa: WPS221
+        processed_text = [
+            self.vocab.index(char) + 1
+            for char in source_text if char in self.vocab
+        ]
         pad_width = 0, self.target_text_size - len(processed_text)
-        processed_text = np.pad(processed_text, pad_width, mode='constant')  # noqa: WPS221
+        processed_text = np.pad(processed_text, pad_width, mode='constant')
 
         kwargs['text'] = processed_text.astype(int)
 
         return kwargs
 
 
-def _decode(labels: np.ndarray, confidences: np.ndarray) -> tuple[list[int], list[float]]:  # noqa: WPS221
+def _decode(
+    labels: np.ndarray,
+    confidences: np.ndarray,
+) -> tuple[list[int], list[float]]:
     result_labels, result_confidences = [], []
     for label, confidence in itertools.groupby(zip(labels, confidences), operator.itemgetter(0)):  # noqa: WPS221
         if label > 0:
@@ -127,4 +136,7 @@ def _decode(labels: np.ndarray, confidences: np.ndarray) -> tuple[list[int], lis
 
 
 def _labels_to_strings(labels: list[int], vocab: str) -> str:
-    return ''.join(vocab[label - 1] if label > 0 else '_' for label in labels)  # noqa: WPS221
+    return ''.join(
+        vocab[label - 1] if label > 0 else '_'
+        for label in labels
+    )

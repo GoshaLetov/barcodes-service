@@ -51,9 +51,14 @@ class ONNXBarCodeSegmentationModel(BaseBarCodeSegmentationModel):
         return bounding_boxes
 
     def inference(self, image: np.ndarray) -> np.ndarray:
-        tensor = self._transform(image=image).get('image').transpose(2, 0, 1)  # noqa: WPS221
+        tensor = self._transform(
+            image=image,
+        ).get('image').transpose(2, 0, 1)
 
         mask = self._model.run(output_names=None, input_feed={'input': [tensor]})
-        mask = expit(resize(src=mask[0][0, 0], dsize=[image.shape[1], image.shape[0]])) > 0.5  # noqa: WPS221
+        mask = expit(resize(
+            src=mask[0][0, 0],
+            dsize=[image.shape[1], image.shape[0]],
+        )) > 0.5
 
         return mask.astype(int)

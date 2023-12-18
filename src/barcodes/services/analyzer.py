@@ -28,7 +28,7 @@ class ONNXBarCodesAnalyzer(BaseBarCodesAnalyzer):
             crop = image[bounding_box.x_min:bounding_box.x_max, bounding_box.y_min:bounding_box.y_max]  # noqa: WPS221
             if crop.shape[0] > crop.shape[1]:
                 crop = cv2.rotate(crop, rotateCode=2)
-            barcodes.append(BarCodeCredentials(  # noqa: WPS221
+            barcodes.append(BarCodeCredentials(
                 bbox=bounding_box,
                 value=self._ocr.extract_text(image=crop),
             ))
